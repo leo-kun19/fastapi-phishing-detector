@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Prediction</title>
+    <script>
+        async function uploadModel() {
+            const modelFile = document.getElementById('modelFile').files[0];
+            const scalerFile = document.getElementById('scalerFile').files[0];
+
+            if (!modelFile || !scalerFile) {
+                alert("Please select both model and scaler files.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("my_model_file", modelFile);
+            formData.append("scaler_file", scalerFile);
+
+            try {
+                const response = await fetch('http://web-production-9f16.up.railway.app/upload_model/', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                alert('Error uploading files: ' + error);
+            }
+        }
+
+        async function predictPhishing() {
+            const urlInput = document.getElementById('urlInput').value;
+
+            if (!urlInput) {
+                alert("Please enter a URL.");
+                return;
+            }
+
+            const response = await fetch('http://web-production-9f16.up.railway.app/predict_phishing/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: urlInput }),
+            });
+
+            const result = await response.json();
+            document.getElementById('predictionResult').innerHTML = `
+                Phishing Detection: ${result.phishing_detection}<br>
+                Probability: ${result.phishing_probability}
+            `;
+        }
+    </script>
+</head>
+<body>
+    <h1>Phishing Detection</h1>
+
+    <!-- Upload Model and Scaler -->
+    <h2>Upload Model and Scaler</h2>
+    <form>
+        <label for="modelFile">Model File (.pkl):</label>
+        <input type="file" id="modelFile" name="modelFile" accept=".pkl"><br><br>
+
+        <label for="scalerFile">Scaler File (.pkl):</label>
+        <input type="file" id="scalerFile" name="scalerFile" accept=".pkl"><br><br>
+
+        <button type="button" onclick="uploadModel()">Upload</button>
+    </form>
+
+    <hr>
+
+    <!-- Phishing Prediction -->
+    <h2>Predict Phishing</h2>
+    <label for="urlInput">Enter URL:</label>
+    <input type="text" id="urlInput" name="urlInput"><br><br>
+    <button type="button" onclick="predictPhishing()">Predict</button>
+
+    <hr>
+
+    <!-- Display Prediction Result -->
+    <h2>Prediction Result</h2>
+    <div id="predictionResult"></div>
+</body>
+</html>
