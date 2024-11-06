@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel, HttpUrl
+from fastapi.responses import FileResponse
 import joblib
 import pandas as pd
 import numpy as np
@@ -26,6 +27,13 @@ scaler = None
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 
+# Define the static directory path for serving HTML
+static_dir = "static"
+
+@app.get("/")
+async def read_index():
+    return FileResponse(os.path.join(static_dir, "index.html"))
+    
 # Definisikan format data input dengan Pydantic
 class PhishingPredictionInput(BaseModel):
     url: HttpUrl  # Menggunakan HttpUrl untuk validasi URL
